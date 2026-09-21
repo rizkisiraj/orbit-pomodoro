@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+/**
+ * Baseline theme tokens. VIEW-1 owns this file from here on and may extend it.
+ * Values trace back to PRD §6 Visual Direction.
+ */
+@theme {
+  --color-void: #07080b;
+  --color-ink: #e8eaf0;
+  --color-dim: #6b7280;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  --ease-orbit: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-void);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
