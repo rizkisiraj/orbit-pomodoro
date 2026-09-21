@@ -166,7 +166,8 @@ export function Station({ completed, newestId, phase, remaining, progress }: Sta
                 strokeLinecap="round"
               />
             </svg>
-            <div style={{ minWidth: 0 }}>
+            {/* Collapses away on phones, leaving the glyph as a chip. */}
+            <div className="st-module-text">
               <div className="st-module-code">{module.code}</div>
               <div className="st-module-status">{module.status}</div>
             </div>
