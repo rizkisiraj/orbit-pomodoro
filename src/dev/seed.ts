@@ -89,9 +89,18 @@ export function seedWeeks(count: number): void {
 /** Reads ?seed=N, seeds, then strips the param so a reload does not re-seed. */
 export function applySeedFromUrl(): boolean {
   const param = new URLSearchParams(window.location.search).get('seed');
-  if (param === null) return false;
+  if (param === null) {
+    console.info('[orbit] no ?seed= param — using existing localStorage.');
+    return false;
+  }
 
-  seedWeeks(Number(param) || 0);
+  const n = Number(param) || 0;
+  seedWeeks(n);
+  console.info(
+    n > 0
+      ? `[orbit] seeded ${n} weeks into localStorage. Reload without ?seed to keep it.`
+      : '[orbit] cleared localStorage.',
+  );
   window.history.replaceState({}, '', window.location.pathname);
   return true;
 }
