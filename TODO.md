@@ -187,18 +187,31 @@ system, and the 20-planet fixture holds 60fps.
 
 ## M-INT — Integration (last, sequential, one owner)
 
-Only start when LOGIC and VIEW are both green against fixtures.
-
-- [ ] **I.1** Swap `contract/mock` imports for real modules in `App.tsx`.
-- [ ] **I.2** Wire transitions: focus complete → `recordSession` → chime →
-      notify; break complete → `addMoonToLatest`; long break complete →
-      `addRingToLatest`; give-up past grace → `shattering` → `recordSession(abandoned)`.
-- [ ] **I.3** Call `rolloverIfNeeded()` on boot and on tab refocus.
-- [ ] **I.4** Delete `src/contract/mock.ts`.
-- [ ] **I.5** Full manual pass: run a real 25-minute session, background the tab
+- [x] **I.1** Swap `contract/mock` imports for real modules in `App.tsx` and
+      `ui/Archive.tsx`; `ScenePlaceholder.tsx` deleted, real `Scene` wired.
+- [x] **I.2** Wire transitions via `useTimer({ onPhaseEnd })` — see the wiring
+      table in `contract/api.ts`. Skipped breaks award nothing.
+- [x] **I.3** `rolloverIfNeeded()` on boot and on `visibilitychange`.
+- [x] **I.4** ~~Delete `src/contract/mock.ts`~~ — **kept deliberately.** The app
+      no longer imports it, but the scene dev harness (`src/scene/__dev__/`)
+      needs fixed fixtures. Header rewritten to mark it harness-only.
+- [x] **I.5a** Integration smoke test (`src/App.smoke.test.tsx`): the wired app
+      mounts with real timer + store + scene tree, from empty AND corrupt
+      localStorage. Stands in for part of the manual pass.
+- [ ] **I.5b** Manual pass — **NOT DONE, needs a human.** No browser tooling was
+      available this session. Run a real 25-minute session, background the tab
       mid-way, confirm the notification fires and the timer has not drifted.
-- [ ] **I.6** Perf + bundle check: < 400kb gzipped, 60fps on a full week.
+- [x] **I.6a** Bundle: 320kb gzipped, inside the 400kb budget.
+- [ ] **I.6b** 60fps on a full week — **NOT VERIFIED.** Only static analysis
+      exists (6,380 tris at 20 planets vs a 12k budget). Nobody has watched it run.
 - [ ] **I.7** Deploy static to Vercel.
+
+### Known gaps carried out of the agent phase
+- [ ] Inter / JetBrains Mono are referenced in `index.css` but never loaded —
+      the UI currently falls back to system sans/mono. Self-host or drop them.
+- [ ] Planet bodies are not GPU-instanced (PRD §7 says "one material with
+      per-instance colour"). Not a bottleneck at 20 planets; still a deviation.
+- [ ] No axe/automated a11y pass; contrast was checked by manual luminance math.
 
 ---
 

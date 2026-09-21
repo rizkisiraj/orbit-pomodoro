@@ -7,9 +7,15 @@
  * against these fixtures and never wait for the logic agents to finish. When
  * the real modules land, the swap is a one-line import change per call site.
  *
- * Deliberately self-contained: it duplicates a little generation math rather
- * than importing from src/gen, so it works while src/gen is still empty.
- * It is throwaway — delete it once both sides are wired together.
+ * STATUS after integration (M-INT): the app no longer reads any of this. The
+ * only remaining consumer is the scene dev harness at `src/scene/__dev__/`,
+ * which needs fixed fixtures to compare frames against and to exercise the
+ * 20-planet case without waiting a real week. Kept for that reason rather than
+ * deleted per TODO I.4.
+ *
+ * Because of that, treat it as harness data ONLY. It duplicates a little
+ * generation math and is NOT guaranteed to match `src/gen/planet.ts` — never
+ * use it to reason about what the real app will render.
  */
 
 import {

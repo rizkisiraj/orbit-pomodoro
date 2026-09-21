@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import { mockPlanetsForWeek } from '../contract/mock';
+import { planetsForWeek } from '~/gen/planet';
 import { starTier } from '../contract/constants';
 import type { Week } from '../contract/types';
-import { ScenePlaceholder } from './ScenePlaceholder';
+import { Scene } from '~/scene/Scene';
 
 const LIVE_THUMBNAIL_CAP = 8;
 
@@ -40,7 +40,7 @@ interface WeekCardProps {
 function WeekCard({ week, eager, onSelect }: WeekCardProps) {
   const [ref, inView] = useInView<HTMLButtonElement>();
   const mounted = eager || inView;
-  const planets = mounted ? mockPlanetsForWeek(week) : [];
+  const planets = mounted ? planetsForWeek(week) : [];
   const tier = starTier(completedCount(week));
 
   return (
@@ -51,7 +51,7 @@ function WeekCard({ week, eager, onSelect }: WeekCardProps) {
       className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-white/[0.02] text-left transition-colors duration-300 ease-orbit hover:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       {mounted && (
-        <ScenePlaceholder
+        <Scene
           planets={planets}
           starTier={tier}
           baseHue={week.baseHue}
@@ -111,8 +111,8 @@ export function Archive({ weeks }: ArchiveProps) {
           className="fixed inset-0 z-20 flex flex-col bg-void/95"
         >
           <div className="relative flex-1">
-            <ScenePlaceholder
-              planets={mockPlanetsForWeek(selectedWeek)}
+            <Scene
+              planets={planetsForWeek(selectedWeek)}
               starTier={starTier(completedCount(selectedWeek))}
               baseHue={selectedWeek.baseHue}
               focusProgress={null}

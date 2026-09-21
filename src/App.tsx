@@ -1,40 +1,116 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { starTier } from '~/contract/constants';
-import { mockPlanetsForWeek, mockStats, mockStore, mockTimer } from '~/contract/mock';
-import type { PlanetParams } from '~/contract/types';
+import type { PlanetParams, TimerApi } from '~/contract/types';
 import type { ViewName } from '~/contract/api';
+import { playChime } from '~/audio/chime';
+import { planetsForWeek } from '~/gen/planet';
+import { notify, requestNotificationPermission } from '~/notify/notify';
+import { computeStats } from '~/stats/stats';
+import { useArchive, useCurrentWeek, useSettings, useStore } from '~/store/store';
+import { Scene } from '~/scene/Scene';
+import { useTimer, type PhaseEndEvent } from '~/timer/useTimer';
 import { Archive } from './ui/Archive';
 import { Controls } from './ui/Controls';
 import { FocusChrome } from './ui/FocusChrome';
 import { HoverCaption } from './ui/HoverCaption';
 import { IntentInput } from './ui/IntentInput';
-import { ScenePlaceholder } from './ui/ScenePlaceholder';
 import { Stats } from './ui/Stats';
 import { Timer } from './ui/Timer';
 import { usePrefersReducedMotion } from './ui/hooks/useReducedMotion';
 
-/**
- * INTEGRATION SWAP POINTS in this file:
- *  - `mockTimer`            -> `useTimer()` from `~/timer/useTimer`
- *  - `mockStore`            -> `useStore()` / `useCurrentWeek()` / `useArchive()` /
- *                              `useSettings()` from `~/store/store`
- *  - `mockStats`            -> `computeStats(currentWeek, archive)` from `~/stats/stats`
- *  - planet params below    -> `planetsForWeek(week)` from `~/gen/planet`
- *  - `ScenePlaceholder`     -> `Scene` from `~/scene/Scene` (same SceneProps shape)
- */
+/** How long the shatter animation runs before the scene settles. PRD §3. */
+const SHATTER_MS = 1200;
+
 export default function App() {
   const [view, setView] = useState<ViewName>('timer');
   const [draftLabel, setDraftLabel] = useState('');
   const [hoveredPlanet, setHoveredPlanet] = useState<PlanetParams | null>(null);
+  const [shattering, setShattering] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
 
-  // --- fixtures (swap for real hooks at integration, see block comment above) ---
-  const timer = mockTimer;
-  const store = mockStore;
-  const stats = mockStats;
-  const currentWeek = store.currentWeek;
+  const currentWeek = useCurrentWeek();
+  const archive = useArchive();
+  const settings = useSettings();
+  const recordSession = useStore((s) => s.recordSession);
+  const addMoonToLatest = useStore((s) => s.addMoonToLatest);
+  const addRingToLatest = useStore((s) => s.addRingToLatest);
+  const rolloverIfNeeded = useStore((s) => s.rolloverIfNeeded);
 
-  const planets = useMemo(() => mockPlanetsForWeek(currentWeek), [currentWeek]);
+  // Seal last week into the archive on boot, and again whenever the tab is
+  // refocused — a tab left open across Sunday midnight must not keep writing
+  // into a week that has already ended.
+  useEffect(() => {
+    rolloverIfNeeded();
+    const onVisible = () => {
+      if (!document.hidden) rolloverIfNeeded();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [rolloverIfNeeded]);
+
+  const shatterTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (shatterTimeout.current) clearTimeout(shatterTimeout.current);
+    },
+    [],
+  );
+
+  const sound = settings.sound;
+  const notifications = settings.notifications;
+
+  // The single integration seam. See the wiring table in ~/contract/api.
+  const onPhaseEnd = useCallback(
+    (event: PhaseEndEvent) => {
+      switch (event.type) {
+        case 'focusCompleted':
+          recordSession(event.session);
+          if (sound) playChime('focusEnd');
+          if (notifications) notify('Focus complete', 'A planet has joined your system.');
+          break;
+        case 'focusAbandoned':
+          recordSession(event.session);
+          setShattering(true);
+          shatterTimeout.current = setTimeout(() => setShattering(false), SHATTER_MS);
+          break;
+        case 'shortBreakCompleted':
+          addMoonToLatest();
+          if (sound) playChime('breakEnd');
+          if (notifications) notify('Break over', 'Back to it.');
+          break;
+        case 'longBreakCompleted':
+          addRingToLatest();
+          if (sound) playChime('breakEnd');
+          if (notifications) notify('Break over', 'Back to it.');
+          break;
+        // focusCancelled (free cancel inside the grace period) and the two
+        // *Skipped events are deliberately silent — nothing is recorded and
+        // nothing is awarded.
+        default:
+          break;
+      }
+    },
+    [recordSession, addMoonToLatest, addRingToLatest, sound, notifications],
+  );
+
+  const timer = useTimer({ onPhaseEnd });
+
+  // Permission is requested on first Start, never on page load. PRD §7.
+  const phase = timer.phase;
+  const askedForPermission = useRef(false);
+  useEffect(() => {
+    if (phase === 'focus' && notifications && !askedForPermission.current) {
+      askedForPermission.current = true;
+      void requestNotificationPermission();
+    }
+  }, [phase, notifications]);
+
+  const stats = useMemo(
+    () => computeStats(currentWeek, archive),
+    [currentWeek, archive],
+  );
+
+  const planets = useMemo(() => planetsForWeek(currentWeek), [currentWeek]);
 
   const completedCount = currentWeek.sessions.filter((s) => s.outcome === 'completed').length;
   const tier = starTier(completedCount);
@@ -45,12 +121,13 @@ export default function App() {
       className="relative h-full w-full overflow-hidden bg-void"
       style={{ '--accent-h': currentWeek.baseHue } as React.CSSProperties}
     >
-      {/* fixed 3D background layer — swap for <Scene /> at integration */}
-      <ScenePlaceholder
+      {/* fixed 3D background layer */}
+      <Scene
         planets={planets}
         starTier={tier}
         baseHue={currentWeek.baseHue}
         focusProgress={focusProgress}
+        shattering={shattering}
         cinematic={!reducedMotion}
         onHoverPlanet={view === 'timer' ? setHoveredPlanet : undefined}
       />
@@ -83,7 +160,7 @@ export default function App() {
         {view === 'archive' && (
           <div className="h-full">
             <NavBack onNavigate={setView} />
-            <Archive weeks={store.archive} />
+            <Archive weeks={archive} />
           </div>
         )}
         {view === 'stats' && (
@@ -100,7 +177,7 @@ export default function App() {
 }
 
 interface TimerViewProps {
-  timer: typeof mockTimer;
+  timer: TimerApi;
   draftLabel: string;
   onDraftChange: (v: string) => void;
   weekLabel: string;
