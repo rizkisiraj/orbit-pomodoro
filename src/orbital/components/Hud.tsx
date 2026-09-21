@@ -3,6 +3,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { SET_LENGTH, pad2 } from '../constants';
+import { playTick } from '../sound';
 import type { Phase, ViewName } from '../types';
 
 interface HudProps {
@@ -71,6 +72,7 @@ export function Hud({
   }, [editing]);
 
   function openEditor() {
+    playTick('soft');
     setDraft(label);
     commitRef.current = true;
     setEditing(true);
@@ -94,7 +96,10 @@ export function Hud({
               <button
                 key={tab}
                 type="button"
-                onClick={() => onView(tab)}
+                onClick={() => {
+                  playTick('soft');
+                  onView(tab);
+                }}
                 aria-current={view === tab ? 'page' : undefined}
                 className={`btn btn-ghost st-tab${view === tab ? ' is-active' : ''}`}
               >
@@ -170,19 +175,37 @@ export function Hud({
               <button
                 ref={startRef}
                 type="button"
-                onClick={onStart}
+                onClick={() => {
+                  playTick('press');
+                  onStart();
+                }}
                 className="btn btn-primary st-begin"
               >
                 BEGIN CYCLE
               </button>
             )}
+            {/* Quitting gets the quiet tick, never the confident one. */}
             {focusing && (
-              <button type="button" onClick={onAbort} className="btn btn-ghost st-secondary">
+              <button
+                type="button"
+                onClick={() => {
+                  playTick('soft');
+                  onAbort();
+                }}
+                className="btn btn-ghost st-secondary"
+              >
                 ABORT
               </button>
             )}
             {recovering && (
-              <button type="button" onClick={onSkip} className="btn btn-ghost st-secondary">
+              <button
+                type="button"
+                onClick={() => {
+                  playTick('soft');
+                  onSkip();
+                }}
+                className="btn btn-ghost st-secondary"
+              >
                 SKIP RECOVERY
               </button>
             )}

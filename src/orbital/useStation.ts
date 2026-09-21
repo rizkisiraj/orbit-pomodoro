@@ -7,7 +7,7 @@
  * visibilitychange handler recomputes immediately on refocus.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { playChime } from './chime';
+import { playChime, setSoundEnabled } from './sound';
 import { DOCK_HIGHLIGHT_MS, FOCUS_MIN, GRACE_S, SET_LENGTH, TICK_MS, durationFor } from './constants';
 import { notify, requestNotificationPermission } from './notify';
 import { completedOf, useStore } from './store';
@@ -72,6 +72,12 @@ export function useStation({
     labelRef.current = label;
     cycleRef.current = cycle;
   }, [phase, label, cycle]);
+
+  // The UI ticks are fired straight from the buttons, so the mute setting has
+  // to live in the sound module for both to honour one switch.
+  useEffect(() => {
+    setSoundEnabled(sound);
+  }, [sound]);
 
   const begin = useCallback(
     (next: Exclude<Phase, 'idle'>) => {
