@@ -1,0 +1,16 @@
+# Deploy: docker compose up -d --build
+# Update:  git pull && docker compose up -d --build
+#
+# All app state (orbital.v1 in localStorage) lives in each visitor's browser —
+# this container is stateless, so there's no volume to back up.
+
+services:
+  orbital-station:
+    build: .
+    container_name: orbital-station
+    restart: unless-stopped
+    ports:
+      # host:container — change the host side if 8080 is taken, or point your
+      # existing reverse proxy (Caddy/Traefik/nginx) at this port instead of
+      # publishing it directly.
+      - "8080:80"

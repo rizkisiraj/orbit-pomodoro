@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Env — this app has no backend and needs no secrets today, but never commit
+# one if that changes.
+.env
+.env.*
+!.env.example
+
+# Build / test artifacts
+*.tsbuildinfo
+coverage
+.vite
+
+# Docker
+docker-data/
+nginx.conf
