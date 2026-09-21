@@ -37,20 +37,45 @@ export function Hud({
   onSkip,
 }: HudProps) {
   const [editing, setEditing] = useState(false);
+  /**
+   * Edits live in a draft until committed, so Escape can genuinely cancel.
+   * Writing straight through to `label` made Escape a no-op that silently kept
+   * whatever had been typed.
+   */
+  const [draft, setDraft] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const startRef = useRef<HTMLButtonElement>(null);
+  const commitRef = useRef(true);
+  const handOffFocus = useRef(false);
+
   const idle = phase === 'idle';
   const focusing = phase === 'focus';
   const recovering = phase === 'break' || phase === 'long';
 
   useEffect(() => {
-    if (editing) inputRef.current?.focus();
+    if (editing) {
+      inputRef.current?.select();
+      return;
+    }
+    // Hand focus to BEGIN CYCLE once the editor has actually unmounted and the
+    // button exists. A rAF here fires before React commits, so focus would
+    // fall through to <body> and a keyboard user would lose their place.
+    if (handOffFocus.current) {
+      handOffFocus.current = false;
+      startRef.current?.focus();
+    }
   }, [editing]);
 
-  const labelText = idle
-    ? label || 'SET CONSTRUCTION INTENT'
-    : label
-      ? `INTENT: ${label}`
-      : 'NO INTENT SET';
+  function openEditor() {
+    setDraft(label);
+    commitRef.current = true;
+    setEditing(true);
+  }
+
+  function closeEditor(commit: boolean) {
+    if (commit) onLabel(draft.trim());
+    setEditing(false);
+  }
 
   return (
     <>
@@ -66,6 +91,7 @@ export function Hud({
                 key={tab}
                 type="button"
                 onClick={() => onView(tab)}
+                aria-current={view === tab ? 'page' : undefined}
                 className={`btn btn-ghost st-tab${view === tab ? ' is-active' : ''}`}
               >
                 {tab.toUpperCase()}
@@ -92,18 +118,28 @@ export function Hud({
           {editing && (
             <input
               ref={inputRef}
-              value={label}
-              onChange={(e) => onLabel(e.target.value)}
-              onBlur={() => setEditing(false)}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              // Blur commits rather than discards — losing typed text to a
+              // stray click is the more annoying failure.
+              onBlur={() => closeEditor(commitRef.current)}
               onKeyDown={(e) => {
-                // Enter commits the intent AND starts the cycle.
                 if (e.key === 'Enter') {
-                  setEditing(false);
-                  onStart();
+                  e.preventDefault();
+                  // Commit, then hand focus to BEGIN CYCLE. Starting a 25-minute
+                  // cycle straight off a text field's Enter is too easy to do
+                  // by accident; this keeps it one deliberate keystroke away.
+                  handOffFocus.current = true;
+                  closeEditor(true);
                 }
-                if (e.key === 'Escape') setEditing(false);
+                if (e.key === 'Escape') {
+                  e.preventDefault();
+                  commitRef.current = false;
+                  closeEditor(false);
+                }
               }}
               placeholder="construction intent"
+              aria-label="Construction intent"
               className="input st-intent-input"
             />
           )}
@@ -111,19 +147,27 @@ export function Hud({
           {!editing && idle && (
             <button
               type="button"
-              onClick={() => setEditing(true)}
-              className="btn btn-ghost st-intent-button"
-              style={{ color: label ? 'var(--color-neutral-100)' : 'var(--color-neutral-400)' }}
+              onClick={openEditor}
+              className={`st-intent-button${label ? ' has-label' : ''}`}
             >
-              {labelText}
+              {label ? `INTENT: ${label}` : '+ SET CONSTRUCTION INTENT'}
             </button>
           )}
 
-          {!editing && !idle && <div className="st-intent-static">{labelText}</div>}
+          {!editing && !idle && (
+            <div className="st-intent-static">
+              {label ? `INTENT: ${label}` : 'NO INTENT SET'}
+            </div>
+          )}
 
           <div className="st-buttons">
             {idle && (
-              <button type="button" onClick={onStart} className="btn btn-primary st-begin">
+              <button
+                ref={startRef}
+                type="button"
+                onClick={onStart}
+                className="btn btn-primary st-begin"
+              >
                 BEGIN CYCLE
               </button>
             )}
@@ -141,7 +185,7 @@ export function Hud({
         </div>
 
         <div className="st-status" style={{ opacity: status ? 1 : 0 }}>
-          {status || ' '}
+          {status || ' '}
         </div>
       </div>
     </>

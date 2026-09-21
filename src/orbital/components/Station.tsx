@@ -49,15 +49,20 @@ export function Station({ completed, newestId, phase, remaining, progress }: Sta
           </g>
 
           <g>
-            {links.map((link, i) => (
+            {links.map((link, i) => {
+              const isNew = modules[i]?.isNew ?? false;
+              const length = Math.hypot(link.x2 - link.x1, link.y2 - link.y1);
+              return (
               <g key={i}>
                 <line
                   x1={link.x1}
                   y1={link.y1}
                   x2={link.x2}
                   y2={link.y2}
-                  stroke="var(--color-neutral-700)"
+                  stroke={isNew ? 'var(--color-accent)' : 'var(--color-neutral-700)'}
                   strokeWidth="1"
+                  className={isNew ? 'st-strut-new' : undefined}
+                  style={isNew ? ({ '--st-len': length } as React.CSSProperties) : undefined}
                 />
                 {/* Energy only flows while building. */}
                 <line
@@ -79,11 +84,13 @@ export function Station({ completed, newestId, phase, remaining, progress }: Sta
                   cy={link.y1}
                   r="3.5"
                   fill="var(--color-bg)"
-                  stroke="var(--color-neutral-600)"
+                  stroke={isNew ? 'var(--color-accent)' : 'var(--color-neutral-600)'}
                   strokeWidth="1"
+                  className={isNew ? 'st-node-new' : undefined}
                 />
               </g>
-            ))}
+              );
+            })}
           </g>
 
           {/* Where the next module will dock — always visible. */}

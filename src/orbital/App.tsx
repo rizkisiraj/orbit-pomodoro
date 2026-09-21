@@ -12,9 +12,19 @@ import { Station } from './components/Station';
 import { useStation } from './useStation';
 import type { ViewName } from './types';
 
+/**
+ * `?demo=1` runs a 25-minute cycle in 25 seconds — the prototype's demoMode,
+ * kept behind a flag so the docking sequence can be watched without waiting
+ * out a real cycle. Dev builds only; it never ships.
+ */
+function demoRequested(): boolean {
+  if (!import.meta.env.DEV || typeof window === 'undefined') return false;
+  return new URLSearchParams(window.location.search).get('demo') === '1';
+}
+
 export default function App() {
   const [view, setView] = useState<ViewName>('station');
-  const station = useStation();
+  const station = useStation({ demo: demoRequested() });
 
   return (
     <div className="st-root">
