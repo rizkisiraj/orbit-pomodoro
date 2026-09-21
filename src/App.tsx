@@ -55,12 +55,17 @@ export default function App() {
         onHoverPlanet={view === 'timer' ? setHoveredPlanet : undefined}
       />
 
-      {/* contrast scrim: keeps text at 4.5:1 even when a bright body passes behind it */}
+      {/* contrast scrim: keeps text at 4.5:1 even when a bright body passes behind it.
+          Archive/Stats are text-first reading surfaces, so they get a near-opaque
+          scrim rather than the timer view's light top/bottom gradient. */}
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 transition-[background] duration-[600ms] ease-orbit"
         style={{
           background:
-            'linear-gradient(to bottom, var(--color-scrim) 0%, transparent 22%, transparent 68%, var(--color-scrim) 100%)',
+            view === 'timer'
+              ? 'linear-gradient(to bottom, var(--color-scrim) 0%, transparent 22%, transparent 68%, var(--color-scrim) 100%)'
+              : 'var(--color-void)',
+          opacity: view === 'timer' ? 1 : 0.82,
         }}
       />
 

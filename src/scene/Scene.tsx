@@ -12,9 +12,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { CSSProperties, ReactElement } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import type { PlanetParams } from '~/contract/types';
 import { orbitRadius } from '~/contract/constants';
+import { BloomEffect } from './BloomEffect';
 import { CameraRig } from './CameraRig';
 import { Orbits } from './Orbits';
 import { Planet } from './Planet';
@@ -117,14 +117,7 @@ export function Scene({
           thumbnail={thumbnail}
         />
 
-        <EffectComposer multisampling={0}>
-          <Bloom
-            intensity={starBloomIntensityForTier(starTier)}
-            luminanceThreshold={0.82}
-            luminanceSmoothing={0.25}
-            mipmapBlur
-          />
-        </EffectComposer>
+        <BloomEffect intensity={starBloomIntensityForTier(starTier)} />
       </Canvas>
     </div>
   );
