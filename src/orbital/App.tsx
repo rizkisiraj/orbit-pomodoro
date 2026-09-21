@@ -24,7 +24,8 @@ function demoRequested(): boolean {
 
 export default function App() {
   const [view, setView] = useState<ViewName>('station');
-  const station = useStation({ demo: demoRequested() });
+  const demo = demoRequested();
+  const station = useStation({ demo });
 
   return (
     <div className="st-root">
@@ -46,6 +47,7 @@ export default function App() {
         label={station.label}
         onLabel={station.setLabel}
         status={station.status}
+        demo={demo}
         onStart={station.start}
         onAbort={station.abort}
         onSkip={station.skip}

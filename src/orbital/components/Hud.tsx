@@ -15,6 +15,9 @@ interface HudProps {
   label: string;
   onLabel: (label: string) => void;
   status: string;
+  /** True only under ?demo=1 in a dev build. Surfaced so a 25-second cycle is
+   *  never mistaken for the real pomodoro durations. */
+  demo?: boolean;
   onStart: () => void;
   onAbort: () => void;
   onSkip: () => void;
@@ -32,6 +35,7 @@ export function Hud({
   label,
   onLabel,
   status,
+  demo = false,
   onStart,
   onAbort,
   onSkip,
@@ -98,6 +102,7 @@ export function Hud({
               </button>
             ))}
           </div>
+          {demo && <div className="st-demo-badge">DEMO · 25s CYCLE</div>}
           <div className="st-online">
             SYSTEM ONLINE
             <span className="st-dot" />
