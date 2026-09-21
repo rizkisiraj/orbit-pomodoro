@@ -31,6 +31,29 @@ import type {
  */
 export type UseTimer = () => TimerApi;
 
+/**
+ * INTEGRATION SEAM (added after LOGIC-1 landed; the signature above is unchanged).
+ *
+ * `TimerState` cannot express everything M-INT needs: it carries no session id
+ * or timestamps for `recordSession`, and it cannot tell a break that completed
+ * from one that was skipped — both merely look like `phase` becoming 'focus'.
+ * So `useTimer` takes an OPTIONAL options bag:
+ *
+ *   useTimer(options?: { onPhaseEnd?: (event: PhaseEndEvent) => void }): TimerApi
+ *
+ * Optional, so `useTimer()` still satisfies `UseTimer` structurally. Import
+ * `PhaseEndEvent` and `UseTimerOptions` from `~/timer/useTimer`.
+ *
+ * M-INT wiring, one handler:
+ *   focusCompleted    -> recordSession(session) + playChime('focusEnd') + notify
+ *   focusAbandoned    -> recordSession(session) + trigger Scene `shattering`
+ *   focusCancelled    -> nothing (free cancel inside the grace period)
+ *   shortBreakCompleted -> addMoonToLatest() + playChime('breakEnd')
+ *   longBreakCompleted  -> addRingToLatest() + playChime('breakEnd')
+ *   *Skipped          -> nothing. Skipping a break is free.
+ */
+export type OnPhaseEnd = (event: unknown) => void;
+
 // ---------------------------------------------------------------------------
 // LOGIC-1  —  src/audio/chime.ts
 // ---------------------------------------------------------------------------

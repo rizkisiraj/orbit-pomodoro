@@ -7,12 +7,16 @@
 @theme {
   --color-void: #07080b;
   --color-ink: #e8eaf0;
-  --color-dim: #6b7280;
+  /* Lightened from the original #6b7280 to clear 4.5:1 against --color-void. */
+  --color-dim: #949cab;
+  --color-faint: #565c68;
+  --color-scrim: rgba(4, 5, 8, 0.62);
 
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  --font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, 'SF Mono', monospace;
 
   --ease-orbit: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fade: 600ms;
 }
 
 html,
@@ -27,4 +31,46 @@ body {
   font-family: var(--font-sans);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  isolation: isolate;
+}
+
+/*
+ * Week accent hue. Set as an inline custom property (--accent-h) on the app
+ * root from Week.baseHue so every accent in the DOM layer derives from one
+ * number, matching the scene. Saturation/lightness are tuned for readable
+ * accents on --color-void, not for text contrast — accent is never used for
+ * body text.
+ */
+:root {
+  --accent-h: 205;
+}
+
+@utility text-accent {
+  color: hsl(var(--accent-h) 70% 68%);
+}
+
+@utility border-accent {
+  border-color: hsl(var(--accent-h) 70% 68% / 0.4);
+}
+
+@utility outline-accent {
+  outline-color: hsl(var(--accent-h) 70% 68%);
+}
+
+@utility bg-accent {
+  background-color: hsl(var(--accent-h) 70% 68%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
