@@ -42,10 +42,18 @@ export function starRadiusForTier(tier: number): number {
   return 0.85 + Math.max(0, Math.min(5, tier)) * 0.11;
 }
 
+/**
+ * Emissive intensity MUST stay above BLOOM_THRESHOLD in BloomEffect, or the
+ * star falls under the bloom pass's luminance cutoff and renders as a flat
+ * matte disc with no halo — which is exactly what happened when this value was
+ * additionally multiplied by the bloom intensity below (0.605 at tier 0,
+ * against a 0.82 threshold). Keep these two independent.
+ */
 export function starEmissiveForTier(tier: number): number {
-  return 1.1 + Math.max(0, Math.min(5, tier)) * 0.55;
+  return 2.6 + Math.max(0, Math.min(5, tier)) * 0.7;
 }
 
+/** Strength of the bloom PASS. Not a multiplier on emissive — see above. */
 export function starBloomIntensityForTier(tier: number): number {
-  return 0.55 + Math.max(0, Math.min(5, tier)) * 0.22;
+  return 0.9 + Math.max(0, Math.min(5, tier)) * 0.22;
 }

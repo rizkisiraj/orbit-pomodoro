@@ -35,6 +35,15 @@ export function CameraRig({
   const pushRef = useRef(0);
   const focusTargetRadius = orbitRadius(nextIndex);
 
+  /**
+   * The camera aims BELOW the star so the system renders in the upper part of
+   * the frame, leaving the centre-bottom column clear for the timer and
+   * controls. Aiming at the origin puts the star directly behind "25:00",
+   * which made the intent line unreadable. Thumbnails keep the centred
+   * framing — they have no UI over them.
+   */
+  const FRAMING_OFFSET_Y = -3;
+
   const baseDistance = useMemo(
     () => Math.max(9, outerRadius * 1.6 + 4),
     [outerRadius],
@@ -63,10 +72,13 @@ export function CameraRig({
 
     if (focusProgress != null) {
       const [tx, ty, tz] = orbitPosition(focusTargetRadius, angleRef.current * 0.4, 0.02);
-      const target = new THREE.Vector3(tx, ty, tz).lerp(new THREE.Vector3(0, 0, 0), 1 - pushRef.current * 0.5);
+      const target = new THREE.Vector3(tx, ty, tz).lerp(
+        new THREE.Vector3(0, FRAMING_OFFSET_Y, 0),
+        1 - pushRef.current * 0.5,
+      );
       camera.lookAt(target);
     } else {
-      camera.lookAt(0, 0, 0);
+      camera.lookAt(0, FRAMING_OFFSET_Y, 0);
     }
   });
 

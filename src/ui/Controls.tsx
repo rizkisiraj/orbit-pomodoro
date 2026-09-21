@@ -18,7 +18,11 @@ export function Controls({ timer, pendingLabel }: ControlsProps) {
       <button
         type="button"
         onClick={() => timer.start(pendingLabel)}
-        className="rounded-full border border-accent px-8 py-2.5 font-sans text-xs font-medium uppercase tracking-[0.2em] text-ink transition-colors duration-300 ease-orbit hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+        /* No pill, no border. A bordered gold capsule read as generic button
+           chrome and fought the restraint the rest of the screen is going for.
+           This is a wide-tracked word that brightens on hover; the underline
+           appears only on hover so the resting state stays quiet. */
+        className="bg-transparent px-2 py-2 font-sans text-[0.7rem] uppercase tracking-[0.42em] text-dim transition-colors duration-300 ease-orbit hover:text-ink focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-accent"
       >
         Start
       </button>

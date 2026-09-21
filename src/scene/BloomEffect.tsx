@@ -33,7 +33,17 @@ export function BloomEffect({ intensity }: BloomEffectProps) {
   const composer = useMemo(() => {
     const c = new EffectComposer(gl);
     c.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(size.width, size.height), intensity, 0.55, 0.82);
+    // (resolution, strength, radius, threshold). The threshold is a LUMINANCE
+    // cutoff: anything dimmer than this never blooms. It must sit below the
+    // star's emissive intensity (see palette.starEmissiveForTier) or the star
+    // renders as a flat disc. Radius is wide for a soft halo rather than a
+    // tight rim — "restraint plus one precise glow", PRD §6.
+    const bloom = new UnrealBloomPass(
+      new THREE.Vector2(size.width, size.height),
+      intensity,
+      0.85,
+      0.55,
+    );
     bloomPassRef.current = bloom;
     c.addPass(bloom);
     c.addPass(new OutputPass());

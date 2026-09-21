@@ -8,7 +8,6 @@ import { useFrame } from '@react-three/fiber';
 import type { Mesh } from 'three';
 import { ICOSA_LOD3 } from './geometryPool';
 import {
-  starBloomIntensityForTier,
   starColorForTier,
   starEmissiveForTier,
   starRadiusForTier,
@@ -24,7 +23,6 @@ export function Star({ starTier, cinematic = true }: StarProps) {
   const color = useMemo(() => starColorForTier(starTier), [starTier]);
   const radius = starRadiusForTier(starTier);
   const emissiveIntensity = starEmissiveForTier(starTier);
-  const bloomBoost = starBloomIntensityForTier(starTier);
 
   // A very slow, near-imperceptible pulse — not a twinkle, just enough life
   // to keep the star from reading as a static sticker. Frozen under reduced motion.
@@ -40,7 +38,7 @@ export function Star({ starTier, cinematic = true }: StarProps) {
         <meshStandardMaterial
           color={color}
           emissive={color}
-          emissiveIntensity={emissiveIntensity * bloomBoost}
+          emissiveIntensity={emissiveIntensity}
           roughness={1}
           metalness={0}
           toneMapped={false}
