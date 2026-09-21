@@ -12,8 +12,8 @@
   --color-faint: #565c68;
   --color-scrim: rgba(4, 5, 8, 0.62);
 
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 
   --ease-orbit: cubic-bezier(0.22, 1, 0.36, 1);
   --duration-fade: 600ms;
