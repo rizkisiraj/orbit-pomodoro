@@ -13,4 +13,4 @@ services:
       # host:container — change the host side if 8080 is taken, or point your
       # existing reverse proxy (Caddy/Traefik/nginx) at this port instead of
       # publishing it directly.
-      - "8080:80"
+      - "127.0.0.1:8080:80"
