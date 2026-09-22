@@ -7,8 +7,8 @@
  * defensively (guards against earlier bad writes) and the cleaned list re-saved.
  */
 import { create } from 'zustand';
-import { STORAGE_KEY } from './constants';
-import type { PersistedStore, Session } from './types';
+import { STORAGE_KEY } from '../constants';
+import type { PersistedStore, Session } from '../types';
 
 function isSession(value: unknown): value is Session {
   if (typeof value !== 'object' || value === null) return false;

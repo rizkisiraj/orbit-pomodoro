@@ -7,11 +7,11 @@
  * visibilitychange handler recomputes immediately on refocus.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { playChime, setSoundEnabled } from './sound';
-import { DOCK_HIGHLIGHT_MS, FOCUS_MIN, GRACE_S, SET_LENGTH, TICK_MS, durationFor } from './constants';
-import { notify, requestNotificationPermission } from './notify';
-import { completedOf, useStore } from './store';
-import type { Phase, Session } from './types';
+import { playChime, setSoundEnabled } from '../utils/sound';
+import { DOCK_HIGHLIGHT_MS, FOCUS_MIN, GRACE_S, SET_LENGTH, TICK_MS, durationFor } from '../constants';
+import { notify, requestNotificationPermission } from '../utils/notify';
+import { completedOf, useStore } from '../store/store';
+import type { Phase, Session } from '../types';
 
 export type StatusMessage =
   | ''
@@ -20,7 +20,9 @@ export type StatusMessage =
   | 'MODULE ONLINE'
   | 'SYSTEMS NOMINAL'
   | 'CONSTRUCTION ABORTED'
-  | 'RECOVERY SKIPPED';
+  | 'RECOVERY SKIPPED'
+  | 'CONSTRUCTION PAUSED'
+  | 'RECOVERY PAUSED';
 
 export interface StationOptions {
   /** Runs 25 minutes in 25 seconds. Dev affordance, keep behind a flag. */
@@ -49,6 +51,7 @@ export function useStation({
   const [label, setLabel] = useState('');
   const [status, setStatus] = useState<StatusMessage>('');
   const [newestId, setNewestId] = useState<string | null>(null);
+  const [paused, setPaused] = useState(false);
   // Cycle position is a visible HUD readout, so it is state, not a ref.
   const [cycle, setCycle] = useState(() => completedOf(sessions).length % SET_LENGTH);
 
@@ -56,6 +59,12 @@ export function useStation({
   const phaseStartRef = useRef(0);
   const askedRef = useRef(false);
   const dockTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pausedRef = useRef(false);
+  const pauseStartRef = useRef(0);
+  // Wall-clock time spent paused during the current phase, subtracted out of
+  // abort's elapsed-time check so a paused cycle cannot burn through the
+  // grace period.
+  const pausedDurationRef = useRef(0);
 
   /**
    * Mirrors of state that the interval and event handlers read. Synced in an
@@ -84,6 +93,9 @@ export function useStation({
       const seconds = durationFor(next, demo);
       deadlineRef.current = Date.now() + seconds * 1000;
       phaseStartRef.current = Date.now();
+      pausedRef.current = false;
+      pausedDurationRef.current = 0;
+      setPaused(false);
       setPhase(next);
       setRemaining(seconds);
       setStatus(next === 'focus' ? 'CONSTRUCTION ACTIVE' : 'RECOVERY CYCLE');
@@ -94,6 +106,8 @@ export function useStation({
   const goIdle = useCallback(
     (message: StatusMessage) => {
       deadlineRef.current = 0;
+      pausedRef.current = false;
+      setPaused(false);
       setPhase('idle');
       setRemaining(durationFor('focus', demo));
       setStatus(message);
@@ -144,7 +158,7 @@ export function useStation({
   // Deadline poll. Cheap, and never the source of truth for elapsed time.
   useEffect(() => {
     const id = setInterval(() => {
-      if (phaseRef.current === 'idle') return;
+      if (phaseRef.current === 'idle' || pausedRef.current) return;
       const left = (deadlineRef.current - Date.now()) / 1000;
       if (left <= 0) {
         complete();
@@ -158,7 +172,7 @@ export function useStation({
   // A backgrounded tab can miss every tick; recompute the moment it returns.
   useEffect(() => {
     const onVisible = () => {
-      if (document.hidden || phaseRef.current === 'idle') return;
+      if (document.hidden || phaseRef.current === 'idle' || pausedRef.current) return;
       const left = (deadlineRef.current - Date.now()) / 1000;
       if (left <= 0) complete();
       else setRemaining(left);
@@ -184,10 +198,31 @@ export function useStation({
     begin('focus');
   }, [begin, notifications]);
 
+  const pause = useCallback(() => {
+    if (phaseRef.current === 'idle' || pausedRef.current) return;
+    pauseStartRef.current = Date.now();
+    pausedRef.current = true;
+    setPaused(true);
+    setStatus(phaseRef.current === 'focus' ? 'CONSTRUCTION PAUSED' : 'RECOVERY PAUSED');
+  }, []);
+
+  const resume = useCallback(() => {
+    if (!pausedRef.current) return;
+    const pausedMs = Date.now() - pauseStartRef.current;
+    // Push the deadline out by however long we sat paused, rather than
+    // recomputing it from `remaining` — that state only refreshes every
+    // TICK_MS, so it would leak up to a quarter-second per pause.
+    deadlineRef.current += pausedMs;
+    pausedDurationRef.current += pausedMs;
+    pausedRef.current = false;
+    setPaused(false);
+    setStatus(phaseRef.current === 'focus' ? 'CONSTRUCTION ACTIVE' : 'RECOVERY CYCLE');
+  }, []);
+
   const abort = useCallback(() => {
     if (phaseRef.current !== 'focus') return;
     const startedAt = Number.isFinite(phaseStartRef.current) ? phaseStartRef.current : Date.now();
-    const elapsed = (Date.now() - startedAt) / 1000;
+    const elapsed = (Date.now() - startedAt - pausedDurationRef.current) / 1000;
 
     // Under the grace period it is a free cancel: nothing recorded, nothing lost.
     if (elapsed >= GRACE_S * (demo ? 1 / 60 : 1)) {
@@ -222,8 +257,11 @@ export function useStation({
     status,
     newestId,
     cycle,
+    paused,
     start,
     abort,
     skip,
+    pause,
+    resume,
   };
 }

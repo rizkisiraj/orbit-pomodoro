@@ -2,9 +2,9 @@
  * Derives what the station renders from the list of completed sessions.
  * Pure: sessions in, geometry out. No React, no DOM.
  */
-import { KINDS, pad2 } from './constants';
+import { KINDS, pad2 } from '../constants';
 import { pctX, pctY, slotFor } from './slots';
-import type { Link, ModuleKind, Session, StationModule } from './types';
+import type { Link, ModuleKind, Session, StationModule } from '../types';
 
 /** The module type for position `index`, cycling through KINDS. */
 export function kindFor(index: number): ModuleKind {

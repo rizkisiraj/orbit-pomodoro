@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { SLOTS, pctX, pctY, slotFor } from './slots';
-import { CORE_R, RINGS } from './constants';
+import { CORE_R, RINGS } from '../constants';
 
 describe('the module lattice', () => {
   test('has one slot per ring position', () => {

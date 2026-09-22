@@ -2,8 +2,8 @@
  * Deterministic starfield. Generated once from a fixed seed so the sky is
  * identical on every load — it is scenery, not data. Static, no twinkle.
  */
-import { STARFIELD_COUNT, STARFIELD_SEED } from './constants';
-import type { Star } from './types';
+import { STARFIELD_COUNT, STARFIELD_SEED } from '../constants';
+import type { Star } from '../types';
 
 export function mulberry32(seed: number): () => number {
   let a = seed;

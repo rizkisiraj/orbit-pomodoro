@@ -3,7 +3,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { SET_LENGTH, pad2 } from '../constants';
-import { playTick } from '../sound';
+import { playTick } from '../utils/sound';
 import type { Phase, ViewName } from '../types';
 
 interface HudProps {
@@ -19,9 +19,12 @@ interface HudProps {
   /** True only under ?demo=1 in a dev build. Surfaced so a 25-second cycle is
    *  never mistaken for the real pomodoro durations. */
   demo?: boolean;
+  paused: boolean;
   onStart: () => void;
   onAbort: () => void;
   onSkip: () => void;
+  onPause: () => void;
+  onResume: () => void;
 }
 
 const TABS: ViewName[] = ['station', 'log', 'stats'];
@@ -37,9 +40,12 @@ export function Hud({
   onLabel,
   status,
   demo = false,
+  paused,
   onStart,
   onAbort,
   onSkip,
+  onPause,
+  onResume,
 }: HudProps) {
   const [editing, setEditing] = useState(false);
   /**
@@ -121,7 +127,7 @@ export function Hud({
           <div>
             CYCLE {pad2(cycle + 1)} / {pad2(SET_LENGTH)}
           </div>
-          <div>ENERGY {idle ? 'READY' : `${Math.round(progress * 100)}%`}</div>
+          <div>ENERGY {idle ? 'READY' : paused ? 'HOLDING' : `${Math.round(progress * 100)}%`}</div>
         </div>
 
         <div className="st-controls">
@@ -182,6 +188,19 @@ export function Hud({
                 className="btn btn-primary st-begin"
               >
                 BEGIN CYCLE
+              </button>
+            )}
+            {(focusing || recovering) && (
+              <button
+                type="button"
+                onClick={() => {
+                  playTick('soft');
+                  if (paused) onResume();
+                  else onPause();
+                }}
+                className="btn btn-ghost st-secondary"
+              >
+                {paused ? 'RESUME' : 'PAUSE'}
               </button>
             )}
             {/* Quitting gets the quiet tick, never the confident one. */}

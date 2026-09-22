@@ -2,8 +2,8 @@
  * CONSTRUCTION LOG — every session ever started, newest first. Aborted cycles
  * appear too; an honest log is the point.
  */
-import { codeFor } from '../modules';
-import { completedOf } from '../store';
+import { codeFor } from '../utils/modules';
+import { completedOf } from '../store/store';
 import type { Session } from '../types';
 
 function formatDate(ms: number): string {

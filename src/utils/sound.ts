@@ -8,7 +8,7 @@
  *  - ticks, which are haptics. A tick should register as feedback and never as
  *    a sound you notice; they are ~40ms and roughly a tenth the gain.
  */
-import { CHIME_BREAK_HZ, CHIME_FOCUS_HZ } from './constants';
+import { CHIME_BREAK_HZ, CHIME_FOCUS_HZ } from '../constants';
 
 export type ChimeKind = 'focusEnd' | 'breakEnd';
 

@@ -2,7 +2,7 @@
  * Every number the design pins down. Values come from
  * design_handoff_orbital_station/README.md — change them here, not at call sites.
  */
-import type { ModuleKind, Phase } from './types';
+import type { ModuleKind, Phase } from '../types';
 
 export const MIN = 60;
 

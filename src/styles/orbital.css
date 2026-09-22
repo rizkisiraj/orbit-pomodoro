@@ -25,6 +25,9 @@ body,
   height: 100%;
   background: var(--color-bg);
   overflow: hidden;
+  /* iOS Safari still rubber-bands a touch past an `overflow: hidden` root,
+     flashing the page background at the top/bottom edge. */
+  overscroll-behavior: none;
 }
 
 ::selection {
@@ -105,6 +108,12 @@ body,
 .st-root {
   position: relative;
   width: 100%;
+  /* Fallback chain, weakest first: plain vh for anything ancient, then
+     Safari's own pre-dvh keyword (iOS < 15.4, still in the wild), then dvh
+     for everyone current. Each line only takes effect where it parses, so
+     unsupported browsers silently keep the previous one. */
+  height: 100vh;
+  height: -webkit-fill-available;
   height: 100dvh;
   min-height: 560px;
   overflow: hidden;
@@ -117,8 +126,17 @@ body,
 .st-stage-wrap {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  /*
+   * Was `display: grid; place-items: center`. Safari (pre-16.4) does not
+   * reliably resolve a percentage `max-height` on a grid item that also has
+   * `aspect-ratio` set — the item's block size comes from the implicit row's
+   * auto size instead, so `.st-stage` never clamps and rides past the
+   * viewport bottom on iOS/macOS Safari. Flex centering resolves the same
+   * percentage against the container's definite height in every engine.
+   */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /*

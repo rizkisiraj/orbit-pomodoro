@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client'
 // Inter covers --font-heading/--font-body; JetBrains Mono is the station face.
 import '@fontsource-variable/inter'
 import '@fontsource-variable/jetbrains-mono'
-import App from './orbital/App'
+import App from './App'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

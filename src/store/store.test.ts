@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest';
 import { parseStore } from './store';
-import { computeStats } from './stats';
-import { codeFor } from './modules';
-import type { Session } from './types';
+import { computeStats } from '../utils/stats';
+import { codeFor } from '../utils/modules';
+import type { Session } from '../types';
 
 function session(over: Partial<Session> = {}): Session {
   return {

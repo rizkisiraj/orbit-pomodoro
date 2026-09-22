@@ -3,7 +3,7 @@
  * is week-scoped.
  */
 import { DAYS, pad2 } from '../constants';
-import { computeStats } from '../stats';
+import { computeStats } from '../utils/stats';
 import type { Session } from '../types';
 
 export function StatsView({ sessions }: { sessions: Session[] }) {

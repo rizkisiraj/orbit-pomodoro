@@ -11,9 +11,9 @@ import {
   RINGS,
   formatTime,
 } from '../constants';
-import { linksFor, modulesFor } from '../modules';
-import { slotFor } from '../slots';
-import { STARS } from '../starfield';
+import { linksFor, modulesFor } from '../utils/modules';
+import { slotFor } from '../utils/slots';
+import { STARS } from '../utils/starfield';
 import type { Phase, Session } from '../types';
 
 interface StationProps {
@@ -22,10 +22,12 @@ interface StationProps {
   phase: Phase;
   remaining: number;
   progress: number;
+  paused: boolean;
 }
 
-export function Station({ completed, newestId, phase, remaining, progress }: StationProps) {
-  const focusing = phase === 'focus';
+export function Station({ completed, newestId, phase, remaining, progress, paused }: StationProps) {
+  // Paused reads as an idle station: no energy flow, no breathing core.
+  const focusing = phase === 'focus' && !paused;
   const modules = modulesFor(completed, newestId);
   const links = linksFor(completed);
   const next = slotFor(completed.length);

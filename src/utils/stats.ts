@@ -2,9 +2,9 @@
  * Telemetry. The station itself is cumulative across all time; only the
  * week row here is week-scoped (ISO week, Monday 00:00 local).
  */
-import { DAYS, dayIndex, weekStart } from './constants';
-import { completedOf } from './store';
-import type { Session, Stats } from './types';
+import { DAYS, dayIndex, weekStart } from '../constants';
+import { completedOf } from '../store/store';
+import type { Session, Stats } from '../types';
 
 export function computeStats(sessions: Session[], now: number = Date.now()): Stats {
   const done = completedOf(sessions);

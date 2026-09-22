@@ -3,13 +3,13 @@
  * Every completed 25-minute cycle docks a module. No accounts, no backend.
  */
 import { useState } from 'react';
-import '../styles/nocturne.css';
-import './orbital.css';
+import './styles/nocturne.css';
+import './styles/orbital.css';
 import { Hud } from './components/Hud';
 import { LogView } from './components/LogView';
 import { StatsView } from './components/StatsView';
 import { Station } from './components/Station';
-import { useStation } from './useStation';
+import { useStation } from './hooks/useStation';
 import type { ViewName } from './types';
 
 /**
@@ -35,6 +35,7 @@ export default function App() {
         phase={station.phase}
         remaining={station.remaining}
         progress={station.progress}
+        paused={station.paused}
       />
 
       <Hud
@@ -48,9 +49,12 @@ export default function App() {
         onLabel={station.setLabel}
         status={station.status}
         demo={demo}
+        paused={station.paused}
         onStart={station.start}
         onAbort={station.abort}
         onSkip={station.skip}
+        onPause={station.pause}
+        onResume={station.resume}
       />
 
       {view === 'log' && <LogView sessions={station.sessions} />}

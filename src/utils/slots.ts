@@ -6,8 +6,8 @@
  * list, which is what keeps the station symmetrical at every count. Never
  * place modules randomly — see README §Module lattice, "the balance rule".
  */
-import { CORE_R, RINGS, VH, VW } from './constants';
-import type { Slot } from './types';
+import { CORE_R, RINGS, VH, VW } from '../constants';
+import type { Slot } from '../types';
 
 function buildSlots(): Slot[] {
   const slots: Slot[] = [];
