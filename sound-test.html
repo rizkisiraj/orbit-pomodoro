@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sound test — Orbital Station</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        background: #161826;
+        color: #e6e6f0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 32px;
+      }
+      button {
+        font: inherit;
+        padding: 10px 16px;
+        border: 1px solid #3a3d55;
+        border-radius: 6px;
+        background: #22243a;
+        color: inherit;
+        cursor: pointer;
+      }
+      button:hover { background: #2c2f4a; }
+      h1 { font-size: 1rem; opacity: 0.7; font-weight: 500; }
+    </style>
+  </head>
+  <body>
+    <h1>Dev-only: exercises src/utils/sound.ts directly. Not part of the app build.</h1>
+    <button id="focusEnd">Chime — focusEnd</button>
+    <button id="breakEnd">Chime — breakEnd</button>
+    <button id="tickSoft">Tick — soft</button>
+    <button id="tickPress">Tick — press</button>
+    <script type="module">
+      import { playChime, playTick } from '/src/utils/sound.ts';
+
+      document.getElementById('focusEnd').onclick = () => playChime('focusEnd');
+      document.getElementById('breakEnd').onclick = () => playChime('breakEnd');
+      document.getElementById('tickSoft').onclick = () => playTick('soft');
+      document.getElementById('tickPress').onclick = () => playTick('press');
+    </script>
+  </body>
+</html>

@@ -52,7 +52,7 @@ export function playChime(kind: ChimeKind): void {
     osc.frequency.value = frequency;
     // exponentialRamp cannot reach zero, hence the 0.0001 floor.
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.07 / (i + 1), t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.45 / (i + 1), t + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.3);
     osc.connect(gain);
     gain.connect(ctx.destination);
