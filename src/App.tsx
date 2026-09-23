@@ -50,7 +50,9 @@ export default function App() {
         status={station.status}
         demo={demo}
         paused={station.paused}
+        pendingRest={station.pendingRest}
         onStart={station.start}
+        onStartRest={station.startRest}
         onAbort={station.abort}
         onSkip={station.skip}
         onPause={station.pause}

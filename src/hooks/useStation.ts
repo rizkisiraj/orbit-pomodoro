@@ -8,7 +8,16 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { playChime, setSoundEnabled } from '../utils/sound';
-import { DOCK_HIGHLIGHT_MS, FOCUS_MIN, GRACE_S, SET_LENGTH, TICK_MS, durationFor } from '../constants';
+import {
+  DOCK_HIGHLIGHT_MS,
+  FOCUS_MIN,
+  GRACE_S,
+  PHASE_NAME,
+  SET_LENGTH,
+  TICK_MS,
+  durationFor,
+  formatTime,
+} from '../constants';
 import { notify, requestNotificationPermission } from '../utils/notify';
 import { completedOf, useStore } from '../store/store';
 import type { Phase, Session } from '../types';
@@ -54,6 +63,10 @@ export function useStation({
   const [paused, setPaused] = useState(false);
   // Cycle position is a visible HUD readout, so it is state, not a ref.
   const [cycle, setCycle] = useState(() => completedOf(sessions).length % SET_LENGTH);
+  // Set the instant a focus session completes; cleared once recovery is
+  // started (or skipped). Recovery no longer starts itself — the station
+  // waits at idle for a deliberate BEGIN, same as a fresh focus cycle.
+  const [pendingRest, setPendingRest] = useState<'break' | 'long' | null>(null);
 
   const deadlineRef = useRef(0);
   const phaseStartRef = useRef(0);
@@ -87,6 +100,17 @@ export function useStation({
   useEffect(() => {
     setSoundEnabled(sound);
   }, [sound]);
+
+  // Mirrors the countdown into the tab title, so it's readable from another
+  // tab or window without switching back — same trick as Pomofocus.
+  useEffect(() => {
+    if (phase === 'idle') {
+      document.title = 'Orbital Station';
+      return;
+    }
+    const label = paused ? 'PAUSED' : PHASE_NAME[phase];
+    document.title = `${formatTime(remaining)} · ${label}`;
+  }, [phase, remaining, paused]);
 
   const begin = useCallback(
     (next: Exclude<Phase, 'idle'>) => {
@@ -144,16 +168,22 @@ export function useStation({
       cycleRef.current = nextCycle;
       setCycle(nextCycle);
       setLabel('');
+      // Every fourth completed cycle earns the long recovery. Recovery
+      // waits for BEGIN rather than starting itself.
+      deadlineRef.current = 0;
+      pausedRef.current = false;
+      setPaused(false);
+      setPhase('idle');
+      setRemaining(durationFor('focus', demo));
       setStatus('MODULE ONLINE');
-      // Every fourth completed cycle earns the long recovery.
-      begin(nextCycle === 0 ? 'long' : 'break');
+      setPendingRest(nextCycle === 0 ? 'long' : 'break');
       return;
     }
 
     if (sound) playChime('breakEnd');
     if (notifications) notify('Recovery complete', 'Ready for the next cycle.');
     goIdle('SYSTEMS NOMINAL');
-  }, [addSession, begin, demo, goIdle, notifications, sound]);
+  }, [addSession, demo, goIdle, notifications, sound]);
 
   // Deadline poll. Cheap, and never the source of truth for elapsed time.
   useEffect(() => {
@@ -195,8 +225,17 @@ export function useStation({
       askedRef.current = true;
       void requestNotificationPermission();
     }
+    // Jumping straight to the next focus cycle counts as skipping recovery.
+    setPendingRest(null);
     begin('focus');
   }, [begin, notifications]);
+
+  const startRest = useCallback(() => {
+    if (phaseRef.current !== 'idle' || !pendingRest) return;
+    const next = pendingRest;
+    setPendingRest(null);
+    begin(next);
+  }, [begin, pendingRest]);
 
   const pause = useCallback(() => {
     if (phaseRef.current === 'idle' || pausedRef.current) return;
@@ -239,9 +278,14 @@ export function useStation({
   }, [addSession, demo, goIdle]);
 
   const skip = useCallback(() => {
+    if (pendingRest) {
+      setPendingRest(null);
+      setStatus('RECOVERY SKIPPED');
+      return;
+    }
     if (phaseRef.current !== 'break' && phaseRef.current !== 'long') return;
     goIdle('RECOVERY SKIPPED');
-  }, [goIdle]);
+  }, [goIdle, pendingRest]);
 
   const total = durationFor(phase === 'idle' ? 'focus' : phase, demo);
   const progress = phase === 'idle' ? 0 : Math.min(1, 1 - remaining / total);
@@ -258,7 +302,9 @@ export function useStation({
     newestId,
     cycle,
     paused,
+    pendingRest,
     start,
+    startRest,
     abort,
     skip,
     pause,

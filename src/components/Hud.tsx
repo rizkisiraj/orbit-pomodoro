@@ -20,7 +20,11 @@ interface HudProps {
    *  never mistaken for the real pomodoro durations. */
   demo?: boolean;
   paused: boolean;
+  /** Set once a focus session completes; recovery waits for BEGIN rather
+   *  than starting itself. */
+  pendingRest: 'break' | 'long' | null;
   onStart: () => void;
+  onStartRest: () => void;
   onAbort: () => void;
   onSkip: () => void;
   onPause: () => void;
@@ -41,7 +45,9 @@ export function Hud({
   status,
   demo = false,
   paused,
+  pendingRest,
   onStart,
+  onStartRest,
   onAbort,
   onSkip,
   onPause,
@@ -177,7 +183,32 @@ export function Hud({
           )}
 
           <div className="st-buttons">
-            {idle && (
+            {idle && pendingRest && (
+              <>
+                <button
+                  ref={startRef}
+                  type="button"
+                  onClick={() => {
+                    playTick('press');
+                    onStartRest();
+                  }}
+                  className="btn btn-primary st-begin"
+                >
+                  {pendingRest === 'long' ? 'START LONG RECOVERY' : 'START RECOVERY'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    playTick('soft');
+                    onSkip();
+                  }}
+                  className="btn btn-ghost st-secondary"
+                >
+                  SKIP RECOVERY
+                </button>
+              </>
+            )}
+            {idle && !pendingRest && (
               <button
                 ref={startRef}
                 type="button"

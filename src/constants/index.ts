@@ -36,7 +36,6 @@ export const DOCK_HIGHLIGHT_MS = 1800;
 /** Timer poll interval. Display only — remaining time comes from the deadline. */
 export const TICK_MS = 250;
 
-export const CHIME_FOCUS_HZ = 620;
 export const CHIME_BREAK_HZ = 440;
 
 export const STARFIELD_SEED = 90210;
