@@ -2,25 +2,36 @@ import { describe, expect, test } from 'vitest';
 import { SLOTS, pctX, pctY, slotFor } from './slots';
 import { CORE_R, RINGS } from '../constants';
 
+// Ring sizes are a design dial (6/12/18 -> 4/8/12 so far), so everything here
+// is expressed against RINGS rather than the counts it happens to produce.
+const SIZE = RINGS.reduce((n, r) => n + r.n, 0);
+
 describe('the module lattice', () => {
   test('has one slot per ring position', () => {
-    expect(SLOTS).toHaveLength(RINGS.reduce((n, r) => n + r.n, 0));
-    expect(SLOTS).toHaveLength(36);
+    expect(SLOTS).toHaveLength(SIZE);
   });
 
   test('fills rings in order, innermost first', () => {
     const rings = SLOTS.map((s) => s.ring);
-    expect(rings.slice(0, 6).every((r) => r === 0)).toBe(true);
-    expect(rings.slice(6, 18).every((r) => r === 1)).toBe(true);
-    expect(rings.slice(18).every((r) => r === 2)).toBe(true);
+    let from = 0;
+    RINGS.forEach((ring, ri) => {
+      expect(rings.slice(from, from + ring.n).every((r) => r === ri)).toBe(true);
+      from += ring.n;
+    });
+    expect(from).toBe(SIZE);
   });
 
   test('emits opposite pairs so the station stays balanced', () => {
-    // Ring 0 has 6 slots at 60 degrees apart; consecutive emitted slots must
-    // sit 180 degrees apart, which is what keeps any count symmetrical.
-    for (let i = 0; i < 6; i += 2) {
-      const delta = Math.abs(SLOTS[i].deg - SLOTS[i + 1].deg);
-      expect(delta).toBeCloseTo(180, 6);
+    // Consecutive emitted slots sit 180 degrees apart, which is what keeps any
+    // count symmetrical. Every ring has an even slot count, so this holds
+    // throughout the lattice, not just the inner ring.
+    let from = 0;
+    for (const ring of RINGS) {
+      for (let i = from; i < from + ring.n; i += 2) {
+        const delta = Math.abs(SLOTS[i].deg - SLOTS[i + 1].deg);
+        expect(delta).toBeCloseTo(180, 6);
+      }
+      from += ring.n;
     }
   });
 
@@ -40,8 +51,8 @@ describe('the module lattice', () => {
 
   test('module positions are stable and wrap past a full lattice', () => {
     expect(slotFor(0)).toBe(SLOTS[0]);
-    expect(slotFor(36)).toBe(SLOTS[0]);
-    expect(slotFor(37)).toBe(SLOTS[1]);
+    expect(slotFor(SIZE)).toBe(SLOTS[0]);
+    expect(slotFor(SIZE + 1)).toBe(SLOTS[1]);
   });
 
   test('maps the origin to the centre of the stage', () => {

@@ -4,12 +4,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { SET_LENGTH, pad2 } from '../constants';
 import { playTick } from '../utils/sound';
+import type { Progress } from '../utils/milestones';
 import type { Phase, ViewName } from '../types';
 
 interface HudProps {
   view: ViewName;
   onView: (view: ViewName) => void;
   moduleCount: number;
+  /** Tier and build progress derived from the all-time module count. */
+  standing: Progress;
   cycle: number;
   phase: Phase;
   progress: number;
@@ -37,6 +40,7 @@ export function Hud({
   view,
   onView,
   moduleCount,
+  standing,
   cycle,
   phase,
   progress,
@@ -99,8 +103,12 @@ export function Hud({
     <>
       <div className="st-hud st-hud-top">
         <div className="st-hud-stack">
-          <div className="st-hud-title">ORBITAL / {pad2(Math.min(99, moduleCount))}</div>
-          <div>SECTOR A-{pad2(4 + (moduleCount % 9))}</div>
+          {/* Uncapped: the count used to clamp at 99, which read as a stuck
+              readout once a station passed it. */}
+          <div className="st-hud-title">ORBITAL / {pad2(moduleCount)}</div>
+          <div>
+            SECTOR A-{pad2(4 + (moduleCount % 9))} · {standing.tier}
+          </div>
         </div>
         <div className="st-hud-right">
           <div className="st-tabs">
@@ -129,7 +137,10 @@ export function Hud({
 
       <div className="st-hud st-hud-bottom">
         <div className="st-hud-stack">
-          <div>MODULES {pad2(moduleCount)}</div>
+          <div>
+            MODULES {pad2(moduleCount)}
+            {standing.next ? ` · ${standing.toNext} TO SEAL` : ' · BUILD COMPLETE'}
+          </div>
           <div>
             CYCLE {pad2(cycle + 1)} / {pad2(SET_LENGTH)}
           </div>

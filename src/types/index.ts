@@ -1,3 +1,4 @@
+
 /**
  * Shared vocabulary for the Orbital Station app.
  * Shapes follow design_handoff_orbital_station/README.md §State management.

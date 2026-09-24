@@ -4,11 +4,14 @@
  */
 import { DAYS, pad2 } from '../constants';
 import { computeStats } from '../utils/stats';
+import { SEAL_POINTS, STATION_SIZE, progressFor } from '../utils/milestones';
 import type { Session } from '../types';
 
 export function StatsView({ sessions }: { sessions: Session[] }) {
   const stats = computeStats(sessions);
+  const standing = progressFor(stats.modules);
   const maxDay = Math.max(1, ...stats.dayCounts);
+  const buildComplete = standing.next === null;
 
   const cells = [
     { value: pad2(stats.modules), label: 'MODULES', sub: 'all time' },
@@ -26,6 +29,33 @@ export function StatsView({ sessions }: { sessions: Session[] }) {
       <div className="st-overlay-inner is-narrow">
         <div className="st-kicker">TELEMETRY</div>
         <h1 className="st-heading">What the station is made of</h1>
+
+        <div className="st-standing">
+          <div className="st-standing-head">
+            <span className="st-standing-tier">{standing.tier}</span>
+            <span className="st-standing-build">BUILD {pad2(standing.stationNumber)}</span>
+          </div>
+          <div className="st-standing-track">
+            <div
+              className="st-standing-fill"
+              style={{ width: `${(standing.inStation / STATION_SIZE) * 100}%` }}
+            />
+            {SEAL_POINTS.map((point) => (
+              <div
+                className="st-standing-seal"
+                key={point}
+                style={{ left: `${(point / STATION_SIZE) * 100}%` }}
+              >
+                <div className={`st-standing-tick${standing.inStation >= point ? ' is-sealed' : ''}`} />
+                <div className="st-standing-tick-label">{pad2(point)}</div>
+              </div>
+            ))}
+          </div>
+          <div className="st-standing-sub">
+            {pad2(standing.inStation)} / {pad2(STATION_SIZE)} MODULES
+            {buildComplete ? ' · BUILD COMPLETE' : ` · ${standing.toNext} TO NEXT SEAL`}
+          </div>
+        </div>
 
         <div className="st-stat-grid">
           {cells.map((cell) => (

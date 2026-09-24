@@ -41,11 +41,23 @@ export const CHIME_BREAK_HZ = 440;
 export const STARFIELD_SEED = 90210;
 export const STARFIELD_COUNT = 100;
 
-/** The three module rings, innermost first. */
+/**
+ * The three module rings, innermost first.
+ *
+ * Geometry is solved, not eyeballed. A module card measures 112 x 44.8 stage
+ * units, so with a 900x590 viewBox no slot can sit past rx 394 / ry 272 without
+ * the card leaving the stage — ring 2 is pinned exactly there, making this the
+ * largest orbit the box allows. The offsets interleave each ring against its
+ * neighbour (ring 0's cross at -90, ring 1 half a step off at -67.5) so no two
+ * cards on adjacent rings ever line up radially. The previous -75/-80 pair put
+ * every ring-1 slot within 10 degrees of a ring-2 slot, which overlapped four
+ * card pairs by up to 18 units at a full build. Clearance is now 14.5 units at
+ * the tightest point; re-solve if the card size or viewBox changes.
+ */
 export const RINGS = [
-  { rx: 170, ry: 130, n: 6, off: -90, opacity: 1 },
-  { rx: 262, ry: 200, n: 12, off: -75, opacity: 0.62 },
-  { rx: 352, ry: 265, n: 18, off: -80, opacity: 0.4 },
+  { rx: 200, ry: 128, n: 4, off: -90, opacity: 1 },
+  { rx: 275, ry: 204, n: 8, off: -67.5, opacity: 0.62 },
+  { rx: 394, ry: 272, n: 12, off: -75, opacity: 0.4 },
 ] as const;
 
 /** Module types, cycled by index. Suffix increments every full pass. */

@@ -11,8 +11,7 @@ import {
   RINGS,
   formatTime,
 } from '../constants';
-import { linksFor, modulesFor } from '../utils/modules';
-import { slotFor } from '../utils/slots';
+import { linksFor, modulesFor, nextSlotFor } from '../utils/modules';
 import { STARS } from '../utils/starfield';
 import type { Phase, Session } from '../types';
 
@@ -30,7 +29,7 @@ export function Station({ completed, newestId, phase, remaining, progress, pause
   const focusing = phase === 'focus' && !paused;
   const modules = modulesFor(completed, newestId);
   const links = linksFor(completed);
-  const next = slotFor(completed.length);
+  const next = nextSlotFor(completed.length);
 
   const dash = `${Math.round(CORE_CIRCUMFERENCE * progress)} ${Math.round(CORE_CIRCUMFERENCE)}`;
 

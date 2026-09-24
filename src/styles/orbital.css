@@ -137,6 +137,14 @@ body,
   display: flex;
   align-items: center;
   justify-content: center;
+  /*
+   * Reserve the HUD bands. Measured at 1440x695: the top HUD is 81px and the
+   * bottom 114px, and a stage spanning the full height puts the outer ring's
+   * cards 67px into the top band and 100px into the bottom one — at a full
+   * 36-module station, two of them sit on the BEGIN CYCLE button. The
+   * max-height: 520px rule below has always done this; the base rule did not.
+   */
+  inset: 84px 0 120px;
 }
 
 /*
@@ -147,7 +155,15 @@ body,
  */
 .st-stage {
   position: relative;
-  width: min(100%, calc(100dvh * 1.525));
+  /*
+   * Sized from the height left between the HUDs, matching the reserved space
+   * above (84 + 120). max-height cannot do this job: with a definite width
+   * plus aspect-ratio a percentage max-height does not clamp the box, so it
+   * keeps its full 900/590 height and overflows the wrap. 1.525 is 900/590.
+   * The vh line is the fallback for engines without dvh.
+   */
+  width: min(100%, calc((100vh - 204px) * 1.525));
+  width: min(100%, calc((100dvh - 204px) * 1.525));
   aspect-ratio: 900 / 590;
   max-height: 100%;
   container-type: inline-size;
@@ -198,7 +214,13 @@ body,
   font-family: var(--font-mono);
   font-weight: 300;
   font-variant-numeric: tabular-nums;
-  font-size: clamp(15px, min(4.4vw, 5.6cqw), 54px);
+  /*
+   * Was 5.6cqw / 54px, which put "25:00" at ~16.8cqw against a core disc of
+   * 18.2cqw — 97% of the diameter, so the timer sat hard against the disc
+   * edge at every stage size. 4.5cqw leaves roughly a quarter of the disc as
+   * margin. The ratio is what matters here, not the pixel ceiling.
+   */
+  font-size: clamp(13px, min(3.6vw, 4.5cqw), 44px);
   line-height: 1.15;
   letter-spacing: 0.03em;
   color: var(--color-text);
@@ -850,4 +872,158 @@ body,
   .st-week-bar {
     transition: none;
   }
+}
+
+/* — milestone banner —
+ *
+ * A ring sealing is the payoff moment, so it gets a scrim rather than the
+ * overlays' solid background — the station stays visible behind it, dimmed
+ * rather than hidden. z-index sits above the top HUD (5) so Escape/CONTINUE
+ * always reach it while it's up.
+ */
+.st-milestone {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: radial-gradient(120% 100% at 50% 50%, rgba(15, 16, 32, 0.72) 0%, rgba(15, 16, 32, 0.88) 100%);
+  animation: st-in 420ms ease both;
+}
+
+.st-milestone-inner {
+  max-width: 440px;
+  padding: 40px 36px;
+  text-align: center;
+  background: var(--st-card-fill);
+  border: 1px solid var(--color-accent-700);
+  border-radius: var(--radius-sm);
+  /* Not st-dock: that ends on translate(-50%, -50%), which centres an
+     absolutely-positioned module on its slot point. On a flex-centred card
+     the fill-mode holds that offset and shifts it half its own size. */
+  animation: st-milestone-in 620ms cubic-bezier(0.2, 0.7, 0.2, 1) 80ms both;
+}
+
+@keyframes st-milestone-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.st-milestone-title {
+  margin: 12px 0 14px;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.st-milestone-detail {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  color: var(--color-neutral-400);
+}
+
+.st-milestone-dismiss {
+  margin-top: 28px;
+  padding: 11px 30px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.26em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .st-milestone,
+  .st-milestone-inner {
+    animation: none !important;
+  }
+}
+
+/* — telemetry: tier / build standing — */
+
+.st-standing {
+  margin: 30px 0 34px;
+}
+
+.st-standing-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.st-standing-tier {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  color: var(--color-accent-200);
+}
+
+.st-standing-build {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--color-neutral-400);
+}
+
+.st-standing-track {
+  position: relative;
+  margin-top: 22px;
+  height: 6px;
+  background: var(--color-neutral-900);
+  border: 1px solid var(--color-neutral-800);
+}
+
+.st-standing-fill {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  border-right: 1px solid var(--color-accent);
+  transition: width 500ms ease;
+}
+
+.st-standing-seal {
+  position: absolute;
+  top: -5px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.st-standing-tick {
+  width: 2px;
+  height: 16px;
+  background: var(--color-neutral-700);
+}
+
+.st-standing-tick.is-sealed {
+  background: var(--color-accent);
+}
+
+.st-standing-tick-label {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--color-neutral-500);
+}
+
+.st-standing-sub {
+  margin-top: 26px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--color-neutral-400);
 }

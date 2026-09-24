@@ -19,7 +19,9 @@ import {
   formatTime,
 } from '../constants';
 import { notify, requestNotificationPermission } from '../utils/notify';
+import { milestoneAt, progressFor } from '../utils/milestones';
 import { completedOf, useStore } from '../store/store';
+import type { Milestone } from '../utils/milestones';
 import type { Phase, Session } from '../types';
 
 export type StatusMessage =
@@ -60,6 +62,10 @@ export function useStation({
   const [label, setLabel] = useState('');
   const [status, setStatus] = useState<StatusMessage>('');
   const [newestId, setNewestId] = useState<string | null>(null);
+  // Set when a dock seals a ring, cleared when the banner is dismissed. Held
+  // separately from `status` because it outlives the transient status line:
+  // this one waits for an acknowledgement.
+  const [milestone, setMilestone] = useState<Milestone | null>(null);
   const [paused, setPaused] = useState(false);
   // Cycle position is a visible HUD readout, so it is state, not a ref.
   const [cycle, setCycle] = useState(() => completedOf(sessions).length % SET_LENGTH);
@@ -163,6 +169,13 @@ export function useStation({
       setNewestId(session.id);
       if (dockTimeout.current) clearTimeout(dockTimeout.current);
       dockTimeout.current = setTimeout(() => setNewestId(null), DOCK_HIGHLIGHT_MS);
+
+      // Count comes from the store, not the `sessions` closure: that value
+      // belongs to the render this callback was built in, and listing it as a
+      // dependency would rebuild `complete` on every dock — tearing down and
+      // restarting the deadline poll along with it.
+      const crossed = milestoneAt(completedOf(useStore.getState().sessions).length);
+      if (crossed) setMilestone(crossed);
 
       const nextCycle = (cycleRef.current + 1) % SET_LENGTH;
       cycleRef.current = nextCycle;
@@ -287,12 +300,22 @@ export function useStation({
     goIdle('RECOVERY SKIPPED');
   }, [goIdle, pendingRest]);
 
+  const dismissMilestone = useCallback(() => setMilestone(null), []);
+
   const total = durationFor(phase === 'idle' ? 'focus' : phase, demo);
   const progress = phase === 'idle' ? 0 : Math.min(1, 1 - remaining / total);
 
+  const completed = completedOf(sessions);
+  // Deliberately not called `progress` — that name is taken above by the
+  // current phase's elapsed ratio.
+  const standing = progressFor(completed.length);
+
   return {
     sessions,
-    completed: completedOf(sessions),
+    completed,
+    standing,
+    milestone,
+    dismissMilestone,
     phase,
     remaining,
     progress,

@@ -7,6 +7,7 @@ import './styles/nocturne.css';
 import './styles/orbital.css';
 import { Hud } from './components/Hud';
 import { LogView } from './components/LogView';
+import { MilestoneBanner } from './components/MilestoneBanner';
 import { StatsView } from './components/StatsView';
 import { Station } from './components/Station';
 import { useStation } from './hooks/useStation';
@@ -42,6 +43,7 @@ export default function App() {
         view={view}
         onView={setView}
         moduleCount={station.completed.length}
+        standing={station.standing}
         cycle={station.cycle}
         phase={station.phase}
         progress={station.progress}
@@ -61,6 +63,9 @@ export default function App() {
 
       {view === 'log' && <LogView sessions={station.sessions} />}
       {view === 'stats' && <StatsView sessions={station.sessions} />}
+
+      {/* Last, so a ring sealing lands on top of whichever view is open. */}
+      <MilestoneBanner milestone={station.milestone} onDismiss={station.dismissMilestone} />
     </div>
   );
 }
