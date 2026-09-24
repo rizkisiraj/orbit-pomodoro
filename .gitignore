@@ -37,3 +37,7 @@ coverage
 # Docker
 docker-data/
 nginx.conf
+
+# Local tooling scratch. Design-research output lands here along with
+# third-party reference screenshots — useful while working, not ours to ship.
+.lazyweb/
