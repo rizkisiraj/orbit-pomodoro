@@ -2,14 +2,12 @@
  * Orbital Station styling.
  *
  * Tokens come from the Nocturne design system (src/styles/nocturne.css) — pull
- * colours and spacing from var(--*), never hard-coded hexes. The two literals
- * below are the documented exceptions: the station interior reads one step
- * darker than the page ground.
+ * colours and spacing from var(--*), never hard-coded hexes. The station's own
+ * grounds (--st-core, --st-card, --st-bg2, --st-edge) are per-theme colours set
+ * in src/styles/themes.css, so nothing here may hard-code them either.
  */
 
 :root {
-  --st-core-fill: #101122;
-  --st-card-fill: #12131f;
   --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
 
   /* The self-hosted variable faces register under "<family> Variable", so the
@@ -117,7 +115,12 @@ body,
   height: 100dvh;
   min-height: 560px;
   overflow: hidden;
-  background: radial-gradient(120% 100% at 50% 42%, #1c1e2f 0%, var(--color-bg) 45%, #0f1020 100%);
+  background: radial-gradient(
+    120% 100% at 50% 42%,
+    var(--st-bg2) 0%,
+    var(--color-bg) 45%,
+    var(--st-edge) 100%
+  );
   color: var(--color-text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -255,7 +258,7 @@ body,
   align-items: center;
   gap: 0.89cqw;
   white-space: nowrap;
-  background: var(--st-card-fill);
+  background: var(--st-card);
   border: 1px solid var(--color-neutral-600);
   border-radius: 0.8cqw;
 }
@@ -354,6 +357,60 @@ body,
   display: flex;
   align-items: center;
   gap: 18px;
+}
+
+/* — theme switcher —
+ *
+ * One dot per theme in its own accent, the active one ringed. The dots are
+ * 18px as drawn; a ::after inset of -5px lifts each hit target to 28px without
+ * changing the visual size, and the 10px gap is exactly twice that inset so
+ * neighbouring targets meet rather than overlap.
+ */
+.st-theme-dots {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.st-theme-dot {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  /* The ring is always drawn so selecting a theme does not shift the row; on
+     the inactive dots it is transparent. */
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 3px transparent;
+}
+
+.st-theme-swatch {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  /* Carries data-theme, so this is that theme's accent, not the page's. */
+  background: var(--color-accent);
+}
+
+.st-theme-dot::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+}
+
+.st-theme-dot.is-active {
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 3px var(--color-neutral-400);
+}
+
+.st-theme-dot:hover {
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 3px var(--color-neutral-600);
+}
+
+.st-theme-dot:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 3px;
 }
 
 .st-tabs {
@@ -677,6 +734,13 @@ body,
     padding-inline: 8px;
   }
 
+  /* Exempt: the dots carry their own extended hit area and stretching them
+     to 40px would turn each one into a capsule. */
+  .st-hud .st-theme-dot {
+    min-height: 18px;
+    padding-inline: 0;
+  }
+
   .st-demo-badge {
     letter-spacing: 0.1em;
   }
@@ -889,7 +953,11 @@ body,
   align-items: center;
   justify-content: center;
   padding: 28px;
-  background: radial-gradient(120% 100% at 50% 50%, rgba(15, 16, 32, 0.72) 0%, rgba(15, 16, 32, 0.88) 100%);
+  background: radial-gradient(
+    120% 100% at 50% 50%,
+    color-mix(in srgb, var(--st-edge) 72%, transparent) 0%,
+    color-mix(in srgb, var(--st-edge) 88%, transparent) 100%
+  );
   animation: st-in 420ms ease both;
 }
 
@@ -897,7 +965,7 @@ body,
   max-width: 440px;
   padding: 40px 36px;
   text-align: center;
-  background: var(--st-card-fill);
+  background: var(--st-card);
   border: 1px solid var(--color-accent-700);
   border-radius: var(--radius-sm);
   /* Not st-dock: that ends on translate(-50%, -50%), which centres an

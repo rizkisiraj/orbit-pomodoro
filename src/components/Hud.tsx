@@ -5,11 +5,15 @@ import { useEffect, useRef, useState } from 'react';
 import { SET_LENGTH, pad2 } from '../constants';
 import { playTick } from '../utils/sound';
 import type { Progress } from '../utils/milestones';
+import { ThemeSwitcher } from './ThemeSwitcher';
+import type { ThemeId } from '../utils/theme';
 import type { Phase, ViewName } from '../types';
 
 interface HudProps {
   view: ViewName;
   onView: (view: ViewName) => void;
+  theme: ThemeId;
+  onTheme: (theme: ThemeId) => void;
   moduleCount: number;
   /** Tier and build progress derived from the all-time module count. */
   standing: Progress;
@@ -39,6 +43,8 @@ const TABS: ViewName[] = ['station', 'log', 'stats'];
 export function Hud({
   view,
   onView,
+  theme,
+  onTheme,
   moduleCount,
   standing,
   cycle,
@@ -111,6 +117,7 @@ export function Hud({
           </div>
         </div>
         <div className="st-hud-right">
+          <ThemeSwitcher theme={theme} onTheme={onTheme} />
           <div className="st-tabs">
             {TABS.map((tab) => (
               <button

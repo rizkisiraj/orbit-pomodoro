@@ -5,6 +5,10 @@ import { createRoot } from 'react-dom/client'
 import '@fontsource-variable/inter'
 import '@fontsource-variable/jetbrains-mono'
 import App from './App'
+import { applyTheme, readTheme } from './utils/theme'
+
+// Before the first render, so a saved non-default theme never flashes Nocturne.
+applyTheme(readTheme())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

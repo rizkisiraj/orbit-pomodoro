@@ -8,6 +8,7 @@ A pomodoro timer that builds a modular space station. Every completed 25-minute 
 - Each completed focus cycle docks a module (COMMS, HABITAT, POWER, RESEARCH, OPTICS, DOCKING, BIOMASS, ANALYSIS) onto one of three rings around the station core.
 - Abort within the first minute and it's a free cancel — nothing is recorded. Abort after that and it's logged.
 - Session history and stats are kept in `localStorage` (`orbital.v1`) — nothing leaves your machine.
+- Five colour themes — Nocturne Blurple, Cryo Cyan, Sodium Console, Hull White and Life Support — switched from the dots in the top-right HUD and remembered under `localStorage` (`orbital.theme`). The palettes live in `src/styles/themes.css`.
 
 ## Tech stack
 
@@ -77,7 +78,9 @@ src/
 │       ├── Station.tsx                # the station visualization
 │       ├── Hud.tsx                     # timer controls / HUD
 │       ├── LogView.tsx                  # session log
-│       └── StatsView.tsx                 # stats dashboard
+│       ├── StatsView.tsx                 # stats dashboard
+│       └── ThemeSwitcher.tsx              # colour theme dots in the HUD
 └── styles/
-    └── nocturne.css              # base theme
+    ├── nocturne.css              # base design system
+    └── themes.css                 # the five colour themes
 ```

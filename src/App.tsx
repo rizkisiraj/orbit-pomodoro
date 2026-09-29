@@ -4,6 +4,8 @@
  */
 import { useState } from 'react';
 import './styles/nocturne.css';
+// After nocturne.css: the per-theme palettes override its tokens.
+import './styles/themes.css';
 import './styles/orbital.css';
 import { Hud } from './components/Hud';
 import { LogView } from './components/LogView';
@@ -11,6 +13,7 @@ import { MilestoneBanner } from './components/MilestoneBanner';
 import { StatsView } from './components/StatsView';
 import { Station } from './components/Station';
 import { useStation } from './hooks/useStation';
+import { useTheme } from './hooks/useTheme';
 import type { ViewName } from './types';
 
 /**
@@ -27,6 +30,7 @@ export default function App() {
   const [view, setView] = useState<ViewName>('station');
   const demo = demoRequested();
   const station = useStation({ demo });
+  const { theme, setTheme } = useTheme();
 
   return (
     <div className="st-root">
@@ -42,6 +46,8 @@ export default function App() {
       <Hud
         view={view}
         onView={setView}
+        theme={theme}
+        onTheme={setTheme}
         moduleCount={station.completed.length}
         standing={station.standing}
         cycle={station.cycle}

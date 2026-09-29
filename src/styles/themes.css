@@ -1,0 +1,172 @@
+/**
+ * Orbital Station — switchable colour themes. See "Station Themes.md".
+ *
+ * Each theme sets eight raw colours, overriding the Nocturne tokens;
+ * everything else (tonal ramps, dividers, shadows) is derived from those eight.
+ * The active theme is `<html data-theme="...">`, written by src/utils/theme.ts
+ * from `localStorage["orbital.theme"]`. A root with no attribute yet — the
+ * first paint, or storage being blocked — gets Nocturne.
+ *
+ * The selectors are deliberately *not* `:root`-qualified: putting `data-theme`
+ * on any element themes that subtree, which is how the HUD's switcher dots
+ * paint five different accents at once. That means every block below has equal
+ * specificity, so no theme's block may ever match another theme's root — hence
+ * `:root:not([data-theme])` for the default rather than a bare `:root`, and no
+ * shared block that Hull White has to out-order.
+ *
+ * Load order still matters against nocturne.css: this file is imported after
+ * it, and `[data-theme=...]` outranks its plain `:root`.
+ */
+
+/* — raw colours — */
+
+:root:not([data-theme]),
+[data-theme='nocturne'] {
+  --color-bg: #161826;
+  --st-bg2: #1c1e2f;
+  --st-edge: #0f1020;
+  --st-core: #101122;
+  --st-card: #12131f;
+  --color-surface: #232532;
+  --color-text: #e9e9ed;
+  --color-accent: #9184d9;
+}
+
+[data-theme='cryo'] {
+  --color-bg: #0c1318;
+  --st-bg2: #122029;
+  --st-edge: #081014;
+  --st-core: #08100f;
+  --st-card: #101b22;
+  --color-surface: #16242d;
+  --color-text: #e4f0f3;
+  --color-accent: #5cd0e2;
+}
+
+[data-theme='sodium'] {
+  --color-bg: #13110e;
+  --st-bg2: #1d1914;
+  --st-edge: #0d0b09;
+  --st-core: #0d0b09;
+  --st-card: #1a1612;
+  --color-surface: #221d17;
+  --color-text: #efe6d8;
+  --color-accent: #eea249;
+}
+
+[data-theme='hull'] {
+  color-scheme: light;
+  --color-bg: #e4e7eb;
+  --st-bg2: #f1f3f5;
+  --st-edge: #d5d9df;
+  --st-core: #f6f7f9;
+  --st-card: #fbfbfc;
+  --color-surface: #f3f4f6;
+  --color-text: #161a21;
+  --color-accent: #c4471a;
+}
+
+[data-theme='life'] {
+  --color-bg: #0d1411;
+  --st-bg2: #131e19;
+  --st-edge: #09100d;
+  --st-core: #09100d;
+  --st-card: #111a16;
+  --color-surface: #17221d;
+  --color-text: #e2eee7;
+  --color-accent: #78dba2;
+}
+
+/* — derived tonal ramps —
+ *
+ * The four dark themes generate their ramps by mixing text, ground and accent
+ * in OKLCH, so a new theme only has to supply the eight raw colours above.
+ * Hull White is a light ground and needs hand-set values (further down).
+ */
+
+:root:not([data-theme]),
+[data-theme='nocturne'],
+[data-theme='cryo'],
+[data-theme='sodium'],
+[data-theme='life'] {
+  --color-neutral-100: color-mix(in oklch, var(--color-text) 96%, var(--color-bg));
+  --color-neutral-200: color-mix(in oklch, var(--color-text) 88%, var(--color-bg));
+  --color-neutral-300: color-mix(in oklch, var(--color-text) 76%, var(--color-bg));
+  --color-neutral-400: color-mix(in oklch, var(--color-text) 62%, var(--color-bg));
+  --color-neutral-500: color-mix(in oklch, var(--color-text) 50%, var(--color-bg));
+  --color-neutral-600: color-mix(in oklch, var(--color-text) 38%, var(--color-bg));
+  --color-neutral-700: color-mix(in oklch, var(--color-text) 26%, var(--color-bg));
+  --color-neutral-800: color-mix(in oklch, var(--color-text) 17%, var(--color-bg));
+  --color-neutral-900: color-mix(in oklch, var(--color-text) 10%, var(--color-bg));
+
+  /* Lighter accent steps mix toward the text colour, darker ones toward the
+     ground — the same shape as the neutral ramp, hung off the accent. */
+  --color-accent-100: color-mix(in oklch, var(--color-accent) 30%, var(--color-text));
+  --color-accent-200: color-mix(in oklch, var(--color-accent) 50%, var(--color-text));
+  --color-accent-300: color-mix(in oklch, var(--color-accent) 68%, var(--color-text));
+  --color-accent-400: color-mix(in oklch, var(--color-accent) 85%, var(--color-text));
+  --color-accent-500: var(--color-accent);
+  --color-accent-600: color-mix(in oklch, var(--color-accent) 80%, var(--color-bg));
+  --color-accent-700: color-mix(in oklch, var(--color-accent) 55%, var(--color-bg));
+  --color-accent-800: color-mix(in oklch, var(--color-accent) 35%, var(--color-bg));
+  --color-accent-900: color-mix(in oklch, var(--color-accent) 20%, var(--color-bg));
+}
+
+/* Hull White — a ramp derived the way the dark themes derive theirs came out
+   too faint against a light ground, so both ramps are fixed by hand. */
+[data-theme='hull'] {
+  --color-neutral-100: #161a21;
+  --color-neutral-200: #262b34;
+  --color-neutral-300: #3a404b;
+  --color-neutral-400: #525966;
+  --color-neutral-500: #666d7a;
+  --color-neutral-600: #8a909b;
+  --color-neutral-700: #b3b8c0;
+  --color-neutral-800: #c9cdd3;
+  --color-neutral-900: #d7dbe0;
+
+  --color-accent-100: #4a1604;
+  --color-accent-200: #7a2508;
+  --color-accent-300: #9a3510;
+  --color-accent-400: #b03e14;
+  --color-accent-500: #c4471a;
+  --color-accent-600: #e0703f;
+  --color-accent-700: #efb293;
+  --color-accent-800: #f5d3c1;
+  --color-accent-900: #f9e6dc;
+
+  /* Ink-tinted drop shadows replace the dark themes' hairline + ambient
+     darkness, which is invisible on a light panel. */
+  --shadow-sm: 0 1px 2px rgba(22, 26, 33, 0.08);
+  --shadow-md: 0 4px 12px rgba(22, 26, 33, 0.1);
+  --shadow-lg: 0 12px 32px rgba(22, 26, 33, 0.14);
+}
+
+/* — tokens Nocturne hard-codes to its own palette — */
+
+:root {
+  --color-divider: color-mix(in srgb, var(--color-text) 16%, transparent);
+  /* The accent's machine-derived stand-in: one step lighter, same hue. */
+  --color-accent-2: var(--color-accent-400);
+  --color-accent-2-100: var(--color-accent-100);
+  --color-accent-2-200: var(--color-accent-200);
+  --color-accent-2-300: var(--color-accent-300);
+  --color-accent-2-400: var(--color-accent-400);
+  --color-accent-2-500: var(--color-accent-500);
+  --color-accent-2-600: var(--color-accent-600);
+  --color-accent-2-700: var(--color-accent-700);
+  --color-accent-2-800: var(--color-accent-800);
+  --color-accent-2-900: var(--color-accent-900);
+}
+
+/* Dark-theme elevation, re-derived so it follows the ground rather than
+   Nocturne's literals. Hull White sets its own, above. */
+:root:not([data-theme]),
+[data-theme='nocturne'],
+[data-theme='cryo'],
+[data-theme='sodium'],
+[data-theme='life'] {
+  --shadow-sm: 0 0 0 1px var(--color-neutral-800);
+  --shadow-md: 0 0 0 1px var(--color-neutral-700), 0 6px 18px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 0 0 1px var(--color-neutral-500), 0 16px 40px rgba(0, 0, 0, 0.65);
+}

@@ -41,3 +41,8 @@ nginx.conf
 # Local tooling scratch. Design-research output lands here along with
 # third-party reference screenshots — useful while working, not ours to ship.
 .lazyweb/
+
+# Local design notes and scratch. The theme palettes are implemented in
+# src/styles/themes.css; the source write-up stays on disk, not in the repo.
+anti-slop/
+Station Themes.md

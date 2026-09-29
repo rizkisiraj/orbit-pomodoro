@@ -8,6 +8,9 @@ export const MIN = 60;
 
 export const STORAGE_KEY = 'orbital.v1';
 
+/** Selected colour theme. Separate from STORAGE_KEY: a look is not history. */
+export const THEME_KEY = 'orbital.theme';
+
 export const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] as const;
 
 /** Stage viewBox. SVG is `-450 -295 900 590`, so the origin is the core. */

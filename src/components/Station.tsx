@@ -119,7 +119,7 @@ export function Station({ completed, newestId, phase, remaining, progress, pause
               cx="0"
               cy="0"
               r={CORE_DISC_R}
-              fill="var(--st-core-fill)"
+              fill="var(--st-core)"
               stroke="var(--color-neutral-700)"
               strokeWidth="1"
             />
